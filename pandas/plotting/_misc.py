@@ -16,7 +16,8 @@ from pandas.plotting._tools import _subplots, _set_ticks_props
 
 def scatter_matrix(frame, alpha=0.5, figsize=None, ax=None, grid=False,
                    diagonal='hist', marker='.', density_kwds=None,
-                   hist_kwds=None, range_padding=0.05, **kwds):
+                   hist_kwds=None, range_padding=0.05, hist2d=False,
+                   hist2d_kwds=None, **kwds):
     """
     Draw a matrix of scatter plots.
 
@@ -44,6 +45,11 @@ def scatter_matrix(frame, alpha=0.5, figsize=None, ax=None, grid=False,
         relative extension of axis range in x and y
         with respect to (x_max - x_min) or (y_max - y_min),
         default 0.05
+    hist2d : bool, optional
+        Setting to true will plot 2D histograms instead of scatter plots
+    hist2d_kwds : kwd dict, optional
+        Dict of matplotlib.pyplot.hist2d specific keywords passed to the
+        function
     kwds : other plotting keyword arguments
         To be passed to scatter function
 
@@ -67,6 +73,7 @@ def scatter_matrix(frame, alpha=0.5, figsize=None, ax=None, grid=False,
     marker = _get_marker_compat(marker)
 
     hist_kwds = hist_kwds or {}
+    hist2d_kwds = hist2d_kwds or {}
     density_kwds = density_kwds or {}
 
     # GH 14855
@@ -102,14 +109,26 @@ def scatter_matrix(frame, alpha=0.5, figsize=None, ax=None, grid=False,
             else:
                 common = (mask[a] & mask[b]).values
 
-                ax.scatter(df[b][common], df[a][common],
-                           marker=marker, alpha=alpha, **kwds)
+                if hist2d:
+                    hist2d_range = [ list(boundaries_list[j]),
+                                     list(boundaries_list[i])]
+                    ax.hist2d(df[b][common], df[a][common],
+                              range=hist2d_range, **hist2d_kwds)
+                else:
+                    ax.scatter(df[b][common], df[a][common],
+                               marker=marker, alpha=alpha, **kwds)
 
                 ax.set_xlim(boundaries_list[j])
                 ax.set_ylim(boundaries_list[i])
 
-            ax.set_xlabel(b)
-            ax.set_ylabel(a)
+            if isinstance(a, tuple):
+                ylabel = '\n'.join(a)
+                xlabel = '\n'.join(b)
+            else:
+                xlabel = b
+                ylabel = a
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
 
             if j != 0:
                 ax.yaxis.set_visible(False)
