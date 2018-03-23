@@ -110,8 +110,8 @@ def scatter_matrix(frame, alpha=0.5, figsize=None, ax=None, grid=False,
                 common = (mask[a] & mask[b]).values
 
                 if hist2d:
-                    hist2d_range = [ list(boundaries_list[j]),
-                                     list(boundaries_list[i])]
+                    hist2d_range = [list(boundaries_list[j]),
+                                    list(boundaries_list[i])]
                     ax.hist2d(df[b][common], df[a][common],
                               range=hist2d_range, **hist2d_kwds)
                 else:
